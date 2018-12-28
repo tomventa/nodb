@@ -67,3 +67,61 @@ function create_database($dbname,$db_model,$db_user=0,$db_encrypted=false,$db_en
         return "error[model]";
     }
 }
+
+
+
+/* Check if database exists*/
+function database_exists($dbname){
+    if (file_exists("storage/databases/".$dbname)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+
+/* Get the array config content */
+function database_config_content($dbname){
+    $config_file = storage::read_small_file("storage/databases/".$dbname."/settings.conf");
+    $config_content = json_decode($config_file);
+    return $config_content;
+}
+
+
+
+/* Get the model of a DB */
+function database_model($dbname){
+    if (database_exists($dbname)){
+        $config = database_config_content($dbname);
+        $config_model = $config->model;
+        return $config_model;
+    }else{
+        return "error[db_does_not_exists]";
+    }
+}
+
+
+
+/* Check write permissions */
+function database_permit_write($dbname){
+    if (database_exists($dbname)){
+        $config = database_config_content($dbname);
+        $config_permit_write = $config->permit_write;
+        return $config_model;
+    }else{
+        return "error[db_does_not_exists]";
+    }
+}
+
+
+
+/* Check read permissions */
+function database_permit_read($dbname){
+    if (database_exists($dbname)){
+        $config = database_config_content($dbname);
+        $config_permit_write = $config->permit_read;
+        return $config_model;
+    }else{
+        return "error[db_does_not_exists]";
+    }
+}
