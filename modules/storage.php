@@ -28,6 +28,7 @@ class storage{
         fwrite($file, $content);
         fclose($file);
     }
+    
 }
 
 ?>
