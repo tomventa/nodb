@@ -20,6 +20,7 @@ class storage{
         $file = fopen($path, "w");
         fwrite($file, $content);
         fclose($file);
+        return true;
     }
     
     public function write_large_file($path,$content,$only_add=false){
@@ -27,6 +28,21 @@ class storage{
         $file = fopen($path, "w");
         fwrite($file, $content);
         fclose($file);
+        return true;
+    }
+    
+    public function get_file_size($path,$mb=true){
+        /* mb/gb */
+        $bytes = filesize($path);
+        $megabytes = ($bytes/1024)/1024;
+        if ($mb){$output = $megabytes;}else{$output = $megabytes/1024;}
+        return $output;
+    }
+    
+    public function assign_small($path){
+        $width_gb = get_file_size($path, false);
+        $small = 2; /* GB */
+        if ($width_gb >= $small){return false;}else{return true;}
     }
     
 }
