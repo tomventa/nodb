@@ -24,7 +24,8 @@ function error_check($text,$get_msg=false){
 
 
 function create_database($dbname,$db_user=0,$db_encrypted=false,$db_encrypt_password=0){
-    
+    /* Check database already exists */
+    if (database_exists($dbname)){return "error[database_already_exists]";}
     /* Create the DB Folder into storage */
     mkdir("storage/databases/".$dbname, 0700);
     /* Create the DB File into DB Folder */
@@ -34,15 +35,16 @@ function create_database($dbname,$db_user=0,$db_encrypted=false,$db_encrypt_pass
     fclose($handle);
     /* Create the DB Settings file into DB Folder */
     $handle = fopen("storage/databases/".$dbname."/settings.conf","w");
-    $text = json_encode(array("name"=>$dbname,"created_timestamp"=>"".microtime(true),"encryption_enabled"=>"$db_encrypted","encryption_password"=>"$db_encrypt_password","permit_write"=>"true","permit_read"=>"true"));
+    $text = json_encode(array("name"=>$dbname,"created_timestamp"=>"".microtime(true),"encryption_enabled"=>"$db_encrypted","encryption_password"=>"$db_encrypt_password","permit_write"=>"true","permit_read"=>"true","tables_number"=>"0"));
     fwrite($handle, $text);
     fclose($handle);
     /* Create the DB Tables file into DB Folder */
     $handle = fopen("storage/databases/".$dbname."/tables.db","w");
-    $text = json_encode(array("number"=>"0"));
+    $text = json_encode(array());
     fwrite($handle, $text);
     fclose($handle);
-    /* Todo: cache files */
+    /* Update dabases.db configuration */
+    
     /* Return true */
     return true;
     
@@ -52,6 +54,7 @@ function create_database($dbname,$db_user=0,$db_encrypted=false,$db_encrypt_pass
 
 /* Check if database exists*/
 function database_exists($dbname){
+    nodb_databases_config();
     if (file_exists("storage/databases/".$dbname)){
         return true;
     }else{
@@ -96,18 +99,6 @@ function database_permit_read($dbname){
 
 
 
-/* Get tables number */
-function database_get_table_number($dbname){
-    if (database_exists($dbname)){
-        $tables_structure = storage::read_small_file("storage/databases/$dbname/tables.db");
-        
-    }else{
-        return "error[db_does_not_exists]";
-    }
-}
-
-
-
 /* Create new table */
 function database_new_table($dbname,$tablename,$tabledescription){
     if (database_exists($dbname)){
@@ -118,4 +109,14 @@ function database_new_table($dbname,$tablename,$tabledescription){
 }
 
 
-
+/* NoDB databases.db */
+function nodb_databases_config(){
+    /* databases.db config */
+    if (!file_exists("storage/databases.db")){
+        $towrite = json_encode(array("database_number"=>"0","database_list"=>""));
+        $file = fopen("storage/databases.db", "w");
+        fwrite($file, $towrite);
+        fclose($file);
+        return true;
+    }
+}
