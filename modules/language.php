@@ -30,21 +30,16 @@ function create_database($dbname,$db_user=0,$db_encrypted=false,$db_encrypt_pass
     mkdir("storage/databases/".$dbname, 0700);
     /* Create the DB File into DB Folder */
     $handle = fopen("storage/databases/".$dbname."/database.db", 'w');
-    $default_text = json_encode(array("tables_structure"=>"","corruption_check"=>"default"));
+    $default_text = json_encode(array("name"=>$dbname,"tables_structure"=>"","corruption_check"=>"default","tables_number"=>0,"created_timestamp"=>"".microtime(true),"encryption_enabled"=>"$db_encrypted","encryption_password"=>"$db_encrypt_password","permit_write"=>"true","permit_read"=>"true"));
     fwrite($handle, $default_text);
-    fclose($handle);
-    /* Create the DB Settings file into DB Folder */
-    $handle = fopen("storage/databases/".$dbname."/settings.conf","w");
-    $text = json_encode(array("name"=>$dbname,"created_timestamp"=>"".microtime(true),"encryption_enabled"=>"$db_encrypted","encryption_password"=>"$db_encrypt_password","permit_write"=>"true","permit_read"=>"true","tables_number"=>"0"));
-    fwrite($handle, $text);
     fclose($handle);
     /* Create the DB Tables file into DB Folder */
     $handle = fopen("storage/databases/".$dbname."/tables.db","w");
-    $text = json_encode(array(""));
+    $text = "{}";
     fwrite($handle, $text);
     fclose($handle);
     /* Update dabases.db configuration */
-    
+    storage::edit_json_file("storage/databases.db","database_number",false,true,1);
     /* Return true */
     return true;
     
@@ -64,9 +59,9 @@ function database_exists($dbname){
 
 
 /* Get the array config content */
-function database_config_content($dbname){
+function database_main_content($dbname){
     if (!class_exists("storage")){return "error[storage_class_does_not_exists]";}
-    $config_file = storage::read_small_file("storage/databases/".$dbname."/settings.conf");
+    $config_file = storage::read_small_file("storage/databases/".$dbname."/database.db");
     $config_content = json_decode($config_file);
     return $config_content;
 }
@@ -76,7 +71,7 @@ function database_config_content($dbname){
 /* Check write permissions */
 function database_permit_write($dbname){
     if (database_exists($dbname)){
-        $config = database_config_content($dbname);
+        $config = database_main_content($dbname);
         $config_permit_write = $config->permit_write;
         return $config_model;
     }else{
@@ -89,7 +84,7 @@ function database_permit_write($dbname){
 /* Check read permissions */
 function database_permit_read($dbname){
     if (database_exists($dbname)){
-        $config = database_config_content($dbname);
+        $config = database_main_content($dbname);
         $config_permit_write = $config->permit_read;
         return $config_model;
     }else{
@@ -127,7 +122,12 @@ function table_exists($dbname,$tablename){
 /* Create new table */
 function database_new_table($dbname,$tablename,$tabledescription){
     if (database_exists($dbname)){
-        
+        if (!table_exists($dbname,$tablename)){
+            /* Increment tables number */
+            storage::edit_json_file("storage/databases/".$dbname."/database.db","tables_number",false,true,1);
+        }else{
+            return "error[table_already_exists]";
+        }
     }else{
         return "error[db_does_not_exists]";
     }

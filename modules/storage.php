@@ -16,7 +16,7 @@ class storage{
     }
     
     public function write_small_file($path,$content,$only_add=false){
-        $content = ($only_add)?read_small_file($path).$content:$content;
+        $content = ($only_add)?storage::read_small_file($path).$content:$content;
         $file = fopen($path, "w");
         fwrite($file, $content);
         fclose($file);
@@ -24,7 +24,7 @@ class storage{
     }
     
     public function write_large_file($path,$content,$only_add=false){
-        $content = ($only_add)?read_small_file($path).$content:$content;
+        $content = ($only_add)?storage::read_small_file($path).$content:$content;
         $file = fopen($path, "w");
         fwrite($file, $content);
         fclose($file);
@@ -45,9 +45,35 @@ class storage{
     }
     
     public function assign_small($path){
-        $width_gb = get_file_size($path, false);
+        $width_gb = storage::get_file_size($path, false);
         $small = 2; /* GB */
         if ($width_gb >= $small){return false;}else{return true;}
+    }
+    
+    public function get_json_file($path,$key,$large=false){
+        $text = ($large)? storage::read_large_file($path) : storage::read_small_file($path);
+        $text = json_decode($text, true);
+        return $text[$key];
+    }
+    
+    public function edit_json_file($path,$key,$value,$large=false,$increment_value=false,$increment_by=1){
+        
+        $text = ($large)? storage::read_large_file($path) : storage::read_small_file($path);
+        $text = json_decode($text, true);
+        
+        if($increment_value){ 
+            $text[$key] += $increment_by;
+        }else{
+            $text[$key] = $value;
+        }
+        
+        $text = json_encode($text);
+        
+        if ($large){ 
+            return storage::write_large_file($path, $text);
+        }else{
+            return storage::write_small_file($path, $text);
+        }
     }
     
 }
