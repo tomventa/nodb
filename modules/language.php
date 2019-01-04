@@ -40,7 +40,7 @@ function create_database($dbname,$db_user=0,$db_encrypted=false,$db_encrypt_pass
     fclose($handle);
     /* Create the DB Tables file into DB Folder */
     $handle = fopen("storage/databases/".$dbname."/tables.db","w");
-    $text = json_encode(array());
+    $text = json_encode(array(""));
     fwrite($handle, $text);
     fclose($handle);
     /* Update dabases.db configuration */
@@ -95,6 +95,31 @@ function database_permit_read($dbname){
     }else{
         return "error[db_does_not_exists]";
     }
+}
+
+
+
+/* Check if table exists */
+function table_exists($dbname,$tablename){
+    /* Check if database exists before checking tables */
+    if (!database_exists($dbname)){return false;}
+    
+    /* Check if file exists */
+    if (!file_exists("storage/databases/".$dbname."/table_".$tablename.".db")){
+        return false;
+    }
+    
+    /*  Check if table exists in tables list (.db) */
+    $tables = storage::read_small_file("storage/databases/".$dbname."/tables.db");
+    $tables = json_decode($tables, true);
+    if (array_key_exists($tablename, $tables)){
+        /* Check if table is not null */
+        if (isset($tables[$tablename])){
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 

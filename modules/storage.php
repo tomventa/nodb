@@ -31,6 +31,11 @@ class storage{
         return true;
     }
     
+    public function edit_small_file($path, $text){
+        if (!file_exists($path)){return "error[file_does_not_exists]";}
+        write_small_file($path, $text);
+    }
+    
     public function get_file_size($path,$mb=true){
         /* mb/gb */
         $bytes = filesize($path);
